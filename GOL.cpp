@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define GOL_SIZE	200
+#define GOL_SIZE	400
 
 static const GTKCairoColour black = {0, 0, 0};
 static const GTKCairoColour white = {1, 1, 1};

@@ -23,7 +23,8 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define GOL_SIZE	400
+#define GOL_WIDTH	800
+#define GOL_HEIGHT	400
 
 static const GTKCairoColour black = {0, 0, 0};
 static const GTKCairoColour white = {1, 1, 1};
@@ -66,7 +67,7 @@ public:
 			golC.push_back(std::vector<bool>(golWidth));
 			golN.push_back(std::vector<bool>(golWidth));
 		}
-		window->RegisterTimedCallback(1000, staticStep, this);
+		window->RegisterTimedCallback(10, staticStep, this);
 	}
 
 	~gol()
@@ -92,6 +93,22 @@ public:
 	{
 		return generation;
 	}
+
+	/*!
+	 * The sole existence of this function is to thunk from a GTK++ callback
+	 * back over to our lovely C++ template class instance
+	 */
+	static bool staticStep(void *data)
+	{
+		golBoard *board = (golBoard *)data;
+		board->step();
+		return true;
+	}
+
+#include "gliderGun.h"
+#include "scrubber.h"
+#include "P49.h"
+#include "breeder2.h"
 
 private:
 	uint8_t neighbourhood(uint32_t x, uint32_t y)
@@ -182,132 +199,10 @@ private:
 		plot();
 		update();
 	}
-
-	/*!
-	 * The sole existence of this function is to thunk from a GTK++ callback
-	 * back over to our lovely C++ template class instance
-	 */
-	static bool staticStep(void *data)
-	{
-		golBoard *board = (golBoard *)data;
-		board->step();
-		return true;
-	}
 };
 
-typedef gol<GOL_SIZE, GOL_SIZE> golGrid;
+typedef gol<GOL_WIDTH, GOL_HEIGHT> golGrid;
 
-inline void gliderGunH(golGrid *golBoard, uint32_t x, uint32_t y)
-{
-	golBoard->set(x + 24, y + 0, true);
-	golBoard->set(x + 22, y + 1, true);
-	golBoard->set(x + 24, y + 1, true);
-	golBoard->set(x + 12, y + 2, true);
-	golBoard->set(x + 13, y + 2, true);
-	golBoard->set(x + 20, y + 2, true);
-	golBoard->set(x + 21, y + 2, true);
-	golBoard->set(x + 34, y + 2, true);
-	golBoard->set(x + 35, y + 2, true);
-	golBoard->set(x + 11, y + 3, true);
-	golBoard->set(x + 15, y + 3, true);
-	golBoard->set(x + 20, y + 3, true);
-	golBoard->set(x + 21, y + 3, true);
-	golBoard->set(x + 34, y + 3, true);
-	golBoard->set(x + 35, y + 3, true);
-	golBoard->set(x + 0, y + 4, true);
-	golBoard->set(x + 1, y + 4, true);
-	golBoard->set(x + 10, y + 4, true);
-	golBoard->set(x + 16, y + 4, true);
-	golBoard->set(x + 20, y + 4, true);
-	golBoard->set(x + 21, y + 4, true);
-	golBoard->set(x + 0, y + 5, true);
-	golBoard->set(x + 1, y + 5, true);
-	golBoard->set(x + 10, y + 5, true);
-	golBoard->set(x + 14, y + 5, true);
-	golBoard->set(x + 16, y + 5, true);
-	golBoard->set(x + 17, y + 5, true);
-	golBoard->set(x + 22, y + 5, true);
-	golBoard->set(x + 24, y + 5, true);
-	golBoard->set(x + 10, y + 6, true);
-	golBoard->set(x + 16, y + 6, true);
-	golBoard->set(x + 24, y + 6, true);
-	golBoard->set(x + 11, y + 7, true);
-	golBoard->set(x + 15, y + 7, true);
-	golBoard->set(x + 12, y + 8, true);
-	golBoard->set(x + 13, y + 8, true);
-}
-
-inline void gliderGunV(golGrid *golBoard, uint32_t x, uint32_t y)
-{
-	golBoard->set(x + 0, y + 24, true);
-	golBoard->set(x + 1, y + 22, true);
-	golBoard->set(x + 1, y + 24, true);
-	golBoard->set(x + 2, y + 12, true);
-	golBoard->set(x + 2, y + 13, true);
-	golBoard->set(x + 2, y + 20, true);
-	golBoard->set(x + 2, y + 21, true);
-	golBoard->set(x + 2, y + 34, true);
-	golBoard->set(x + 2, y + 35, true);
-	golBoard->set(x + 3, y + 11, true);
-	golBoard->set(x + 3, y + 15, true);
-	golBoard->set(x + 3, y + 20, true);
-	golBoard->set(x + 3, y + 21, true);
-	golBoard->set(x + 3, y + 34, true);
-	golBoard->set(x + 3, y + 35, true);
-	golBoard->set(x + 4, y + 0, true);
-	golBoard->set(x + 4, y + 1, true);
-	golBoard->set(x + 4, y + 10, true);
-	golBoard->set(x + 4, y + 16, true);
-	golBoard->set(x + 4, y + 20, true);
-	golBoard->set(x + 4, y + 21, true);
-	golBoard->set(x + 5, y + 0, true);
-	golBoard->set(x + 5, y + 1, true);
-	golBoard->set(x + 5, y + 10, true);
-	golBoard->set(x + 5, y + 14, true);
-	golBoard->set(x + 5, y + 16, true);
-	golBoard->set(x + 5, y + 17, true);
-	golBoard->set(x + 5, y + 22, true);
-	golBoard->set(x + 5, y + 24, true);
-	golBoard->set(x + 6, y + 10, true);
-	golBoard->set(x + 6, y + 16, true);
-	golBoard->set(x + 6, y + 24, true);
-	golBoard->set(x + 7, y + 11, true);
-	golBoard->set(x + 7, y + 15, true);
-	golBoard->set(x + 8, y + 12, true);
-	golBoard->set(x + 8, y + 13, true);
-}
-
-inline void scrubber(golGrid *golBoard, uint32_t x, uint32_t y)
-{
-	golBoard->set(x + 4, y + 0, true);
-	golBoard->set(x + 2, y + 1, true);
-	golBoard->set(x + 3, y + 1, true);
-	golBoard->set(x + 4, y + 1, true);
-	golBoard->set(x + 1, y + 2, true);
-	golBoard->set(x + 1, y + 3, true);
-	golBoard->set(x + 4, y + 3, true);
-	golBoard->set(x + 5, y + 3, true);
-	golBoard->set(x + 6, y + 3, true);
-	golBoard->set(x + 0, y + 4, true);
-	golBoard->set(x + 1, y + 4, true);
-	golBoard->set(x + 3, y + 4, true);
-	golBoard->set(x + 7, y + 4, true);
-	golBoard->set(x + 3, y + 5, true);
-	golBoard->set(x + 7, y + 5, true);
-	golBoard->set(x + 3, y + 6, true);
-	golBoard->set(x + 7, y + 6, true);
-	golBoard->set(x + 9, y + 6, true);
-	golBoard->set(x + 10, y + 6, true);
-	golBoard->set(x + 4, y + 7, true);
-	golBoard->set(x + 5, y + 7, true);
-	golBoard->set(x + 6, y + 7, true);
-	golBoard->set(x + 9, y + 7, true);
-	golBoard->set(x + 9, y + 8, true);
-	golBoard->set(x + 6, y + 9, true);
-	golBoard->set(x + 7, y + 9, true);
-	golBoard->set(x + 8, y + 9, true);
-	golBoard->set(x + 6, y + 10, true);
-}
 
 int main(int argc, char **argv)
 {
@@ -326,7 +221,7 @@ int main(int argc, char **argv)
 	window->SetResizable(TRUE);
 	window->SetBorder(5);
 	vBox = new GTKVBox(false, 0);
-	image = new GTKCairoDrawingArea(GOL_SIZE * 2, GOL_SIZE * 2);
+	image = new GTKCairoDrawingArea(GOL_WIDTH * 2, GOL_HEIGHT * 2);
 	vBox->AddChild(image);
 	generations = new GTKLabel();
 	vBox->AddChild(generations);
@@ -338,11 +233,12 @@ int main(int argc, char **argv)
 	generations->SetText(label);
 	delete [] label;
 
-	gliderGunH(golBoard, 110, 110);
-	gliderGunH(golBoard, 150, 200);
-	gliderGunH(golBoard, 200, 200);
-	gliderGunV(golBoard, 110, 150);
-	scrubber(golBoard, 250, 110);
+	//golBoard->gliderGunH(310, 110);
+	//golBoard->gliderGunH(350, 200);
+	//golBoard->gliderGunH(400, 200);
+	//golBoard->gliderGunV(310, 150);
+	//golBoard->scrubber(450, 110);
+	golBoard->breeder2(0, 200);
 	golBoard->forceDraw();
 
 	window->DoMessageLoop();

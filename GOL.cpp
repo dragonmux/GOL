@@ -100,6 +100,13 @@ public:
 #include "scrubber.h"
 #include "P49GliderShuttle.h"
 #include "breeder2.h"
+#include "tenEngineCordership.h"
+#include "sevenEngineCordership.h"
+#include "threeEngineCordership.h"
+#include "diamondRing.h"
+#include "harbour.h"
+#include "ecologist.h"
+#include "puffer2.h"
 
 	static void doStep(GtkWidget *widget, void *data)
 	{
@@ -281,10 +288,23 @@ int main(int argc, char **argv)
 
 	//golBoard->gliderGunH(310, 110);
 	//golBoard->gliderGunH(350, 200);
+	// Don't enable this one if diamondRing is enabled below
 	//golBoard->gliderGunH(400, 200);
 	//golBoard->gliderGunV(310, 150);
 	//golBoard->scrubber(450, 110);
-	golBoard->breeder2(0, 200);
+	//golBoard->P49GliderShuttle(450, 110);
+	//golBoard->P49GliderShuttle(110, 110);
+	//golBoard->P49GliderShuttle(300, 110);
+	//golBoard->P49GliderShuttle(635, 110);
+	//golBoard->breeder2(0, 200);
+	//golBoard->tenEngineCordership(GOL_WIDTH - 99, GOL_HEIGHT - 99);
+	//golBoard->sevenEngineCordership(GOL_WIDTH - 99, GOL_HEIGHT - 99);
+	//golBoard->threeEngineCordership(GOL_WIDTH - 99, GOL_HEIGHT - 99);
+	//golBoard->diamondRing(394, 194);
+	//golBoard->harbour(10, 10);
+	//golBoard->ecologist(GOL_WIDTH - 50, 200);
+	//golBoard->puffer2V(400, GOL_HEIGHT - 10);
+	golBoard->puffer2H(GOL_WIDTH - 10, 200);
 	golBoard->forceDraw();
 
 	window->DoMessageLoop();

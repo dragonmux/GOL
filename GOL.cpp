@@ -53,13 +53,15 @@ template <uint32_t golWidth, uint32_t golHeight> class gol
 {
 private:
 	std::vector<std::vector<bool> > golC, golN;
+	GTKWindow *window;
 	GTKCairoDrawingArea *image;
 	GTKLabel *label;
 	typedef gol<golWidth, golHeight> golBoard;
 	uint32_t generation;
+	uint32_t callbackID;
 
 public:
-	gol(GTKWindow *window, GTKCairoDrawingArea *img, GTKLabel *lbl) : image(img), label(lbl), generation(0)
+	gol(GTKWindow *wnd, GTKCairoDrawingArea *img, GTKLabel *lbl) : window(wnd), image(img), label(lbl), generation(0)
 	{
 		for (uint32_t i = 0; i < golHeight; i++)
 		{
@@ -67,7 +69,7 @@ public:
 			golC.push_back(std::vector<bool>(golWidth));
 			golN.push_back(std::vector<bool>(golWidth));
 		}
-		window->RegisterTimedCallback(10, staticStep, this);
+		registerTimer();
 	}
 
 	~gol()
@@ -94,23 +96,43 @@ public:
 		return generation;
 	}
 
-	/*!
-	 * The sole existence of this function is to thunk from a GTK++ callback
-	 * back over to our lovely C++ template class instance
-	 */
-	static bool staticStep(void *data)
-	{
-		golBoard *board = (golBoard *)data;
-		board->step();
-		return true;
-	}
-
 #include "gliderGun.h"
 #include "scrubber.h"
-#include "P49.h"
+#include "P49GliderShuttle.h"
 #include "breeder2.h"
 
+	static void doStep(GtkWidget *widget, void *data)
+	{
+		doStop(widget, data);
+		golBoard::staticStep(data);
+	}
+
+	static void doStart(GtkWidget *widget, void *data)
+	{
+		golBoard *board = (golBoard *)data;
+		if (board->callbackID == 0)
+			board->registerTimer();
+	}
+
+	static void doStop(GtkWidget *widget, void *data)
+	{
+		golBoard *board = (golBoard *)data;
+		if (board->callbackID != 0)
+			board->unregisterTimer();
+	}
+
 private:
+	void unregisterTimer()
+	{
+		window->UnregisterTimedCallback(callbackID);
+		callbackID = 0;
+	}
+
+	void registerTimer()
+	{
+		callbackID = window->RegisterTimedCallback(10, staticStep, this);
+	}
+
 	uint8_t neighbourhood(uint32_t x, uint32_t y)
 	{
 		uint8_t size = 0;
@@ -199,10 +221,20 @@ private:
 		plot();
 		update();
 	}
+
+	/*!
+	 * The sole existence of this function is to thunk from a GTK++ callback
+	 * back over to our lovely C++ template class instance
+	 */
+	static bool staticStep(void *data)
+	{
+		golBoard *board = (golBoard *)data;
+		board->step();
+		return true;
+	}
 };
 
 typedef gol<GOL_WIDTH, GOL_HEIGHT> golGrid;
-
 
 int main(int argc, char **argv)
 {
@@ -211,6 +243,8 @@ int main(int argc, char **argv)
 	GTKCairoDrawingArea *image;
 	GTKLabel *generations;
 	GTKVBox *vBox;
+	GTKHBox *hBox;
+	GTKButton *btnStep, *btnStart, *btnStop;
 	char *label;
 
 	GTK::GTKInit(argc, argv);
@@ -223,12 +257,24 @@ int main(int argc, char **argv)
 	vBox = new GTKVBox(false, 0);
 	image = new GTKCairoDrawingArea(GOL_WIDTH * 2, GOL_HEIGHT * 2);
 	vBox->AddChild(image);
+	hBox = new GTKHBox(true, 0);
 	generations = new GTKLabel();
-	vBox->AddChild(generations);
+	//vBox->AddChild(generations);
+	hBox->AddChild(generations);
+	btnStart = new GTKButton("Start");
+	btnStop = new GTKButton("Stop");
+	btnStep = new GTKButton("Step");
+	hBox->AddChild(btnStart);
+	hBox->AddChild(btnStop);
+	hBox->AddChild(btnStep);
+	vBox->AddChild(hBox);
 	window->AddChild(vBox);
 	window->ShowWindow();
 
 	golBoard = new golGrid(window, image, generations);
+	btnStart->SetOnClicked((void *)golGrid::doStart, golBoard);
+	btnStop->SetOnClicked((void *)golGrid::doStop, golBoard);
+	btnStep->SetOnClicked((void *)golGrid::doStep, golBoard);
 	label = formatGenerations(golBoard->getGeneration());
 	generations->SetText(label);
 	delete [] label;

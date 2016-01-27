@@ -18,7 +18,7 @@ include Makefile.inc
 
 EXTRA_CFLAGS = $(shell pkg-config --cflags libGTK++)
 CFLAGS = -c -O2 -I../ $(EXTRA_CFLAGS) -o $@ $<
-LIBS = $(shell pkg-config --libs libGTK++) -lstdc++
+LIBS = $(shell pkg-config --libs libGTK++)
 LFLAGS = $(O) $(LIBS) -o $(EXE)
 
 O = GOL.o

@@ -28,11 +28,11 @@ export quiet Q BUILD_VERBOSE
 endif
 
 quiet_cmd_cxx = " CXX   $@"
-cmd_cxx = $(CC) $(2)
+cmd_cxx = $(CXX) $(2)
 quiet_cmd_cc = " CC    $@"
-cmd_cc = $(GCC) $(2)
+cmd_cc = $(CC) $(2)
 quiet_cmd_ccld = " CCLD  $@"
-cmd_ccld = $(CC) $(2)
+cmd_ccld = $(CXX) $(2)
 quiet_cmd_strip = " STRIP $@"
 cmd_strip = $(STRIP) $(1)
 quiet_cmd_rm = " CLEAN $(2)"
@@ -62,6 +62,7 @@ endef
 
 # Set up build engine variables
 GCC ?= gcc
+GXX ?= g++
 ifeq ($(strip $(DEBUG)), 1)
 	OPTIM_FLAGS = -ggdb
 	GCC_FLAGS = 
@@ -75,7 +76,8 @@ else
 	OPTIM_FLAGS = -O2
 	DEBUG = 0
 endif
-CC = $(GCC) $(GCC_FLAGS)
+CC = $(GCC)
+CXX = $(GXX) $(GCC_FLAGS)
 CHMOD = chmod 0755
 STRIP = strip -s
 RM = rm -f
